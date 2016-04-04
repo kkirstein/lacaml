@@ -1,7 +1,7 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 8347832eef12be46afe6ee9f1bc6b51d) *)
+(* DO NOT EDIT (digest: 6f360563adbc4e0118b05e944e7ba080) *)
 module OASISGettext = struct
-(* # 22 "src/oasis/OASISGettext.ml" *)
+(* # 22 "src/oasis\\OASISGettext.ml" *)
 
 
   let ns_ str =
@@ -30,7 +30,7 @@ module OASISGettext = struct
 end
 
 module OASISExpr = struct
-(* # 22 "src/oasis/OASISExpr.ml" *)
+(* # 22 "src/oasis\\OASISExpr.ml" *)
 
 
 
@@ -131,7 +131,7 @@ end
 
 # 132 "myocamlbuild.ml"
 module BaseEnvLight = struct
-(* # 22 "src/base/BaseEnvLight.ml" *)
+(* # 22 "src/base\\BaseEnvLight.ml" *)
 
 
   module MapString = Map.Make(String)
@@ -236,7 +236,7 @@ end
 
 # 237 "myocamlbuild.ml"
 module MyOCamlbuildFindlib = struct
-(* # 22 "src/plugins/ocamlbuild/MyOCamlbuildFindlib.ml" *)
+(* # 22 "src/plugins/ocamlbuild\\MyOCamlbuildFindlib.ml" *)
 
 
   (** OCamlbuild extension, copied from
@@ -314,7 +314,9 @@ module MyOCamlbuildFindlib = struct
     with Not_found -> s
 
   (* ocamlfind command *)
-  let ocamlfind x = S[Sh (exec_from_conf "ocamlfind"); x]
+  let ocamlfind x = S[Sh (
+    Ocamlbuild_pack.Shell.quote_filename_if_needed
+      (exec_from_conf "ocamlfind") ); x]
 
   (* This lists all supported packages. *)
   let find_packages () =
@@ -426,7 +428,7 @@ module MyOCamlbuildFindlib = struct
 end
 
 module MyOCamlbuildBase = struct
-(* # 22 "src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
+(* # 22 "src/plugins/ocamlbuild\\MyOCamlbuildBase.ml" *)
 
 
   (** Base functions for writing myocamlbuild.ml
@@ -447,7 +449,7 @@ module MyOCamlbuildBase = struct
   type tag = string
 
 
-(* # 62 "src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
+(* # 62 "src/plugins/ocamlbuild\\MyOCamlbuildBase.ml" *)
 
 
   type t =
@@ -559,10 +561,10 @@ module MyOCamlbuildBase = struct
                       need that file to be up to date.
                       This holds both for programs and for libraries.
                     *)
-  		 dep ["link"; "ocaml"; "program"; tag_libstubs lib]
+  		 dep ["link"; "ocaml"; tag_libstubs lib]
   		     [dir/"lib"^(nm_libstubs lib)^"."^(!Options.ext_lib)];
 
-  		 dep  ["compile"; "ocaml"; "program"; tag_libstubs lib]
+  		 dep  ["compile"; "ocaml"; tag_libstubs lib]
   		      [dir/"lib"^(nm_libstubs lib)^"."^(!Options.ext_lib)];
 
                    (* TODO: be more specific about what depends on headers *)
@@ -603,7 +605,7 @@ module MyOCamlbuildBase = struct
 end
 
 
-# 606 "myocamlbuild.ml"
+# 608 "myocamlbuild.ml"
 open Ocamlbuild_plugin;;
 let package_default =
   {
@@ -620,19 +622,23 @@ let package_default =
           (["oasis_library_lacaml_ccopt"; "compile"],
             [
                (OASISExpr.EBool true, S []);
-               (OASISExpr.ETest ("system", "mingw"),
-                 S [A "-ccopt"; A "-DEXTERNAL_EXP10"]);
+               (OASISExpr.ETest ("system", "mingw64"),
+                 S
+                   [A "-ccopt"; A "-DEXTERNAL_EXP10"; A "-ccopt"; A "-DWIN32"
+                   ]);
                (OASISExpr.ETest ("system", "macosx"),
                  S [A "-ccopt"; A "-DEXTERNAL_EXP10"]);
                (OASISExpr.EAnd
                   (OASISExpr.ETest ("system", "macosx"),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
                       A "-DEXTERNAL_EXP10";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.EFlag "strict",
@@ -654,7 +660,7 @@ let package_default =
                   (OASISExpr.EAnd
                      (OASISExpr.EFlag "strict",
                        OASISExpr.ETest ("ccomp_type", "cc")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -668,7 +674,9 @@ let package_default =
                       A "-ccopt";
                       A "-Wno-long-long";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.EAnd
@@ -696,7 +704,7 @@ let package_default =
                         (OASISExpr.EFlag "strict",
                           OASISExpr.ETest ("ccomp_type", "cc")),
                        OASISExpr.ETest ("system", "macosx")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -712,7 +720,9 @@ let package_default =
                       A "-ccopt";
                       A "-DEXTERNAL_EXP10";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EOr
                   (OASISExpr.ETest ("system", "linux"),
@@ -734,7 +744,7 @@ let package_default =
                   (OASISExpr.EOr
                      (OASISExpr.ETest ("system", "linux"),
                        OASISExpr.ETest ("system", "linux_elf")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -748,7 +758,9 @@ let package_default =
                       A "-ccopt";
                       A "-DPIC";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.EOr
@@ -776,7 +788,7 @@ let package_default =
                         (OASISExpr.ETest ("system", "linux"),
                           OASISExpr.ETest ("system", "linux_elf")),
                        OASISExpr.ETest ("system", "macosx")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -792,7 +804,9 @@ let package_default =
                       A "-ccopt";
                       A "-DEXTERNAL_EXP10";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.EOr
@@ -832,7 +846,7 @@ let package_default =
                        OASISExpr.EAnd
                          (OASISExpr.EFlag "strict",
                            OASISExpr.ETest ("ccomp_type", "cc"))),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -856,7 +870,9 @@ let package_default =
                       A "-ccopt";
                       A "-Wno-long-long";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.EAnd
@@ -902,7 +918,7 @@ let package_default =
                             (OASISExpr.EFlag "strict",
                               OASISExpr.ETest ("ccomp_type", "cc"))),
                        OASISExpr.ETest ("system", "macosx")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -928,7 +944,9 @@ let package_default =
                       A "-ccopt";
                       A "-DEXTERNAL_EXP10";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.ENot
                   (OASISExpr.EOr
@@ -952,7 +970,7 @@ let package_default =
                      (OASISExpr.EOr
                         (OASISExpr.ETest ("system", "linux"),
                           OASISExpr.ETest ("system", "linux_elf"))),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -966,7 +984,9 @@ let package_default =
                       A "-ccopt";
                       A "-DPIC";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.ENot
@@ -996,7 +1016,7 @@ let package_default =
                            (OASISExpr.ETest ("system", "linux"),
                              OASISExpr.ETest ("system", "linux_elf"))),
                        OASISExpr.ETest ("system", "macosx")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -1012,7 +1032,9 @@ let package_default =
                       A "-ccopt";
                       A "-DEXTERNAL_EXP10";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.ENot
@@ -1054,7 +1076,7 @@ let package_default =
                        OASISExpr.EAnd
                          (OASISExpr.EFlag "strict",
                            OASISExpr.ETest ("ccomp_type", "cc"))),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -1078,7 +1100,9 @@ let package_default =
                       A "-ccopt";
                       A "-Wno-long-long";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ]);
                (OASISExpr.EAnd
                   (OASISExpr.EAnd
@@ -1126,7 +1150,7 @@ let package_default =
                             (OASISExpr.EFlag "strict",
                               OASISExpr.ETest ("ccomp_type", "cc"))),
                        OASISExpr.ETest ("system", "macosx")),
-                    OASISExpr.ETest ("system", "mingw")),
+                    OASISExpr.ETest ("system", "mingw64")),
                  S
                    [
                       A "-ccopt";
@@ -1152,7 +1176,9 @@ let package_default =
                       A "-ccopt";
                       A "-DEXTERNAL_EXP10";
                       A "-ccopt";
-                      A "-DEXTERNAL_EXP10"
+                      A "-DEXTERNAL_EXP10";
+                      A "-ccopt";
+                      A "-DWIN32"
                    ])
             ]);
           (["oasis_library_lacaml_cclib"; "link"],
@@ -1189,7 +1215,7 @@ let conf = {MyOCamlbuildFindlib.no_automatic_syntax = false}
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
-# 1193 "myocamlbuild.ml"
+# 1219 "myocamlbuild.ml"
 (* OASIS_STOP *)
 
 let rec split_on is_delim s i0 i i1 =
